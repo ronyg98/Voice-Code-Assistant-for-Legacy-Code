@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SignSpeak — Sign Language, Understood</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤟</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<!-- ═══════════════════ NAV ═══════════════════ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">🤟</span>
+      <span class="brand-name">Sign<em>Speak</em></span>
+    </a>
+    <div class="nav-links">
+      <a href="#studio">Live Studio</a>
+      <a href="#reference">Vocabulary</a>
+      <a href="#assistant">Assistant</a>
+    </div>
+    <div class="nav-status" id="server-status">
+      <span class="dot dot-wait"></span><span id="server-status-text">Connecting…</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<header class="hero" id="top">
+  <div class="hero-badge">Real-time ASL recognition · On-device models</div>
+  <h1>Sign language,<br><span class="grad-text">understood.</span></h1>
+  <p class="hero-sub">
+    Turn hand gestures into text and speech with your webcam — then ask our
+    AI assistant anything about sign language, fingerspelling, and deaf culture.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="#studio">✋ Try Live Studio</a>
+    <a class="btn btn-ghost" href="#assistant">💬 Ask the Assistant</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-num">24</span><span class="stat-label">ASL letters</span></div>
+    <div class="stat-sep"></div>
+    <div class="stat"><span class="stat-num">3</span><span class="stat-label">Word gestures</span></div>
+    <div class="stat-sep"></div>
+    <div class="stat"><span class="stat-num">97%</span><span class="stat-label">Letter accuracy</span></div>
+    <div class="stat-sep"></div>
+    <div class="stat"><span class="stat-num">21</span><span class="stat-label">Hand landmarks</span></div>
+  </div>
+</header>
+
+<!-- ═══════════════════ LIVE STUDIO ═══════════════════ -->
+<section class="section" id="studio">
+  <div class="section-head">
+    <span class="section-kicker">Feature 01</span>
+    <h2>Live Studio</h2>
+    <p>Hold a sign steady in front of your camera — SignSpeak tracks 21 hand landmarks
+       and commits the letter or word to your sentence.</p>
+  </div>
+
+  <div class="studio-grid">
+    <!-- camera panel -->
+    <div class="card video-card" id="video-card">
+      <div class="video-wrap" id="video-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="overlay"></canvas>
+        <div class="video-placeholder" id="video-placeholder">
+          <div class="cam-icon">📷</div>
+          <p>Camera is off</p>
+          <button class="btn btn-primary" id="btn-start">Start camera</button>
+        </div>
+        <div class="video-hud" id="video-hud" hidden>
+          <span class="hud-pill" id="hud-hands">✋ 0 hands</span>
+          <span class="hud-pill" id="hud-fps">— fps</span>
+        </div>
+      </div>
+      <div class="video-footer">
+        <button class="btn btn-small btn-ghost" id="btn-stop" hidden>■ Stop camera</button>
+        <span class="video-hint">Tip: use one hand for letters, both hands for HELLO / THANK YOU / PLEASE</span>
+      </div>
+    </div>
+
+    <!-- prediction + sentence panel -->
+    <div class="studio-side">
+      <div class="card predict-card">
+        <div class="card-title">Detection</div>
+        <div class="predict-display">
+          <div class="predict-ring">
+            <svg viewBox="0 0 120 120">
+              <circle class="ring-track" cx="60" cy="60" r="52"/>
+              <circle class="ring-fill" id="hold-ring" cx="60" cy="60" r="52"/>
+            </svg>
+            <div class="predict-label" id="predict-label">–</div>
+          </div>
+          <div class="predict-meta">
+            <div class="predict-type" id="predict-type">show a hand to begin</div>
+            <div class="conf-bar"><div class="conf-fill" id="conf-fill"></div></div>
+            <div class="conf-text" id="conf-text">confidence 0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card sentence-card">
+        <div class="card-title">Your sentence</div>
+        <div class="sentence-box" id="sentence-box"><span class="sentence-placeholder">Signed letters and words appear here…</span></div>
+        <div class="sentence-actions">
+          <button class="btn btn-small btn-ghost" id="btn-space" title="Add a space">␣ Space</button>
+          <button class="btn btn-small btn-ghost" id="btn-back" title="Delete last character">⌫ Delete</button>
+          <button class="btn btn-small btn-ghost" id="btn-clear" title="Clear the sentence">✕ Clear</button>
+          <button class="btn btn-small btn-primary" id="btn-speak" title="Read the sentence aloud">🔊 Speak</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ VOCABULARY ═══════════════════ -->
+<section class="section" id="reference">
+  <div class="section-head">
+    <span class="section-kicker">Feature 02</span>
+    <h2>What SignSpeak understands</h2>
+    <p>The current model recognises 24 static fingerspelling letters and 3 two-hand words.
+       J and Z are motion letters, so they're not included yet.</p>
+  </div>
+  <div class="card vocab-card">
+    <div class="vocab-group">
+      <div class="vocab-heading">Fingerspelling · one hand</div>
+      <div class="letter-grid" id="letter-grid"></div>
+    </div>
+    <div class="vocab-group">
+      <div class="vocab-heading">Words · two hands</div>
+      <div class="word-row">
+        <span class="word-chip">👋 HELLO</span>
+        <span class="word-chip">🙏 THANK YOU</span>
+        <span class="word-chip">🤲 PLEASE</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ ASSISTANT ═══════════════════ -->
+<section class="section" id="assistant">
+  <div class="section-head">
+    <span class="section-kicker">Feature 03</span>
+    <h2>Signy — your sign language assistant</h2>
+    <p>Ask how to sign a word, about ASL grammar, deaf culture, or how the
+       hand-tracking works. Signy only talks sign language.</p>
+  </div>
+
+  <div class="card chat-card">
+    <div class="chat-head">
+      <div class="chat-avatar">🤟</div>
+      <div>
+        <div class="chat-name">Signy</div>
+        <div class="chat-sub" id="chat-provider">sign language expert</div>
+      </div>
+      <span class="chat-online"><span class="dot dot-ok"></span> online</span>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg msg-bot">
+        <div class="msg-bubble">
+          Hey! I'm <strong>Signy</strong> 🤟 — ask me anything about sign language:
+          how to sign a word, fingerspelling tips, deaf culture, or how this app
+          tracks your hands. What would you like to know?
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-suggestions" id="chat-suggestions">
+      <button class="chip">How do I sign "thank you"?</button>
+      <button class="chip">Why are J and Z hard to detect?</button>
+      <button class="chip">Give me 3 beginner fingerspelling tips</button>
+      <button class="chip">How does hand tracking work here?</button>
+    </div>
+
+    <form class="chat-input-row" id="chat-form">
+      <textarea id="chat-input" rows="1" placeholder="Ask about sign language…" autocomplete="off"></textarea>
+      <button class="btn btn-primary chat-send" id="chat-send" type="submit">➤</button>
+    </form>
+  </div>
+</section>
+
+<footer class="footer">
+  <span>SignSpeak · MediaPipe hand tracking + RandomForest classifiers, trained on your own samples</span>
+</footer>
+
+<!-- ═══════════════════ FLOATING ASL CHART ═══════════════════ -->
+<div class="chart-popup" id="chart-popup" hidden>
+  <div class="chart-popup-head">
+    <span>🤟 ASL Alphabet Chart</span>
+    <span class="chart-popup-hint">click the button again or press Esc to close</span>
+  </div>
+  <img src="{{ url_for('static', filename='img/asl_alphabet.png') }}" alt="ASL fingerspelling alphabet chart, letters A to Z">
+</div>
+<button class="chart-fab" id="chart-fab" title="ASL alphabet chart" aria-label="Toggle ASL alphabet chart" aria-expanded="false">
+  <span class="chart-fab-icon" id="chart-fab-icon">✋</span>
+</button>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
