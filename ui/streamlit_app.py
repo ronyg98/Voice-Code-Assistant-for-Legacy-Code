@@ -461,9 +461,12 @@ def live_chat_panel():
     live = api("GET", "/api/live/status").json()
     if not live["running"]:
         return
-    # the chat follows the live conversation's session
+    # the chat follows the live conversation's session - but only if that
+    # session belongs to the logged-in user (else /messages would 404)
     live_sid = live.get("session_id", "")
-    if live_sid and live_sid != st.session_state.get("session_id"):
+    me = st.session_state.get("me") or {}
+    if (live_sid and live.get("user") == me.get("username")
+            and live_sid != st.session_state.get("session_id")):
         st.session_state.session_id = live_sid
         st.rerun(scope="app")
     state = live["state"]
@@ -612,7 +615,13 @@ def assistant_tab(me: dict):
                 "POST", "/api/sessions", json={"repo": repo}).json()["session_id"]
         sid = st.session_state.session_id
 
-        history = api("GET", f"/api/sessions/{sid}/messages").json()["messages"]
+        resp = api("GET", f"/api/sessions/{sid}/messages")
+        if not resp.ok:   # stale or foreign session (deleted DB, other account)
+            st.session_state.session_id = api(
+                "POST", "/api/sessions", json={"repo": repo}).json()["session_id"]
+            st.session_state.live_turns = 0
+            st.rerun()
+        history = resp.json()["messages"]
 
         if history:   # clear the screen and start over
             _, cbtn = st.columns([4.2, 1])
